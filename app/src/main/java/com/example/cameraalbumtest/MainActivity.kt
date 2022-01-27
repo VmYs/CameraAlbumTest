@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
             //打开文件选择器
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
-            intent.type = "image/*"
+            //intent.type = "image/*"
             //指定显示图片
             fromAlbumRegister.launch(arrayOf("image/*"))
         }

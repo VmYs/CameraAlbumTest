@@ -12,6 +12,12 @@
         android:layout_height="wrap_content"
         android:text="@string/take_photo" />
 
+    <Button
+        android:id="@+id/fromAlbumBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/from_album" />
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="wrap_content"

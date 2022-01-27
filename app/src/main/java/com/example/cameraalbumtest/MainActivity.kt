@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import com.example.cameraalbumtest.databinding.ActivityMainBinding
 import java.io.File
+import kotlin.contracts.contract
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,9 +26,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var imageUri: Uri
     private lateinit var outputImage: File
 
-    private val requestDataLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) {
+    private val takePhotoRegister = registerForActivityResult(ActivityResultContracts.TakePicture()) {
         val bitmap = BitmapFactory.decodeStream(contentResolver.openInputStream(imageUri))
         binding.imageView.setImageBitmap(rotateIfRequired(bitmap))
+    }
+
+    private val fromAlbumRegister = registerForActivityResult(ActivityResultContracts.OpenDocument()) {
+        val bitmap = getBitmapFromUri(it)
+        binding.imageView.setImageBitmap(bitmap)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,11 +51,20 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Uri.fromFile(outputImage)
             }
+            //启动相机程序
+            val intent = Intent("android.media.action.IMAGE_CAPTURE")
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
+            takePhotoRegister.launch(imageUri)
         }
-        //启动相机程序
-        val intent = Intent("android.media.action.IMAGE_CAPTURE")
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-        requestDataLauncher.launch(imageUri)
+
+        binding.fromAlbumBtn.setOnClickListener {
+            //打开文件选择器
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            intent.type = "image/*"
+            //指定显示图片
+            fromAlbumRegister.launch(arrayOf("image/*"))
+        }
     }
 
     private fun rotateIfRequired(bitmap: Bitmap) : Bitmap {
@@ -69,5 +84,10 @@ class MainActivity : AppCompatActivity() {
         bitmap.recycle() //将不再需要的Bitmap对象回收
         return rotatedBitmap
     }
+
+    private fun getBitmapFromUri(uri: Uri) = contentResolver
+            .openFileDescriptor(uri, "r")?.use {
+                BitmapFactory.decodeFileDescriptor(it.fileDescriptor)
+            }
 
 }
